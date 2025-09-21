@@ -1,6 +1,6 @@
 # NeStA-Picker — Pick your next Steam achievement fast (CLI)
 
-NeStA-Picker is a fast, zero-fuss CLI that suggests the next Steam achievement to tackle from your library. It reads your owned games and achievement progress via the Steam Web API (or a Playwright fallback), then records your picks so you can keep momentum.
+NeStA-Picker is a fast, zero-fuss CLI for Completionists that suggests the next Steam achievement to tackle from your library. It reads your owned games and achievement progress via the Steam Web API (or a Playwright fallback), then records your picks so you can keep momentum.
 
 - **Quick suggestion**: one command to pick the next unachieved target
 - **Filters by game**: focus on a specific title with `--game`
@@ -28,13 +28,13 @@ Local clone and run:
 
 ```bash
 pnpm install
-pnpm start -- pick --help
+pnpm nesta pick --help
 ```
 
 Or execute via tsx directly (dev):
 
 ```bash
-pnpm exec tsx src/cli/index.ts pick --random
+pnpm nesta pick --random
 ```
 
 ## Usage
