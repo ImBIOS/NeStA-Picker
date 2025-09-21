@@ -28,5 +28,3 @@ export function loadDotEnvIfPresent(): void {
     // ignore .env parsing errors to avoid breaking CLI
   }
 }
-
-

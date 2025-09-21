@@ -1,17 +1,26 @@
 import https from 'https';
+import * as S from 'sury';
 import db from '../lib/db';
 import { Achievement } from '../models/achievement';
 import { Game } from '../models/game';
+import { AchievementSchema, GameSchema } from '../schemas/models';
+import {
+  GameSchemaForGameSchema,
+  PlayerAchievementsSchema,
+  ResolveVanityUrlSchema,
+  SteamGamesResponseSchema,
+  UserStatsForGameSchema,
+} from '../schemas/steam';
 
 function fetchJson<T>(url: string): Promise<T> {
   return new Promise((resolve, reject) => {
     https
       .get(url, (res) => {
-        const status = res.statusCode ?? 0;
-        if (status < 200 || status >= 300) {
-          reject(new Error(`HTTP ${status} for ${url}`));
-          return;
-        }
+        // const status = res.statusCode ?? 0;
+        // if (status < 200 || status >= 300) {
+        //   reject(new Error(`HTTP ${status} for ${url}`));
+        //   return;
+        // }
         const chunks: Buffer[] = [];
         res.on('data', (d) => chunks.push(d));
         res.on('end', () => {
@@ -27,13 +36,34 @@ function fetchJson<T>(url: string): Promise<T> {
   });
 }
 
+function fetchText(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, (res) => {
+        const status = res.statusCode ?? 0;
+        if (status < 200 || status >= 300) {
+          reject(new Error(`HTTP ${status} for ${url}`));
+          return;
+        }
+        const chunks: Buffer[] = [];
+        res.on('data', (d) => chunks.push(d));
+        res.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+      })
+      .on('error', reject);
+  });
+}
+
 export async function resolveVanityUrl(apiKey: string, vanityUrl: string): Promise<string> {
   const url = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=${encodeURIComponent(
     apiKey,
   )}&vanityurl=${encodeURIComponent(vanityUrl)}`;
-  type Resp = { response?: { success?: number; steamid?: string } };
-  const data = await fetchJson<Resp>(url);
-  if (data.response?.success === 1 && data.response.steamid) return data.response.steamid;
+  const data = await fetchJson<unknown>(url);
+  try {
+    const parsed = S.parseOrThrow(data, ResolveVanityUrlSchema);
+    if (parsed.response?.success === 1 && parsed.response.steamid) return parsed.response.steamid;
+  } catch {
+    // ignore invalid response
+  }
   // If resolution fails, return the input to let upstream decide
   return vanityUrl;
 }
@@ -49,22 +79,30 @@ export async function getGames(apiKey: string, steamId: string): Promise<Game[]>
     apiKey,
   )}&steamid=${encodeURIComponent(steamId)}&include_appinfo=true&include_played_free_games=true`;
 
-  type SteamGamesResponse = {
-    response?: { games?: Array<{ appid: number; name?: string }> };
-  };
+  const data = await fetchJson<unknown>(url);
+  let gamesRaw: Array<{ appid: number; name?: string }> = [];
+  try {
+    const parsed = S.parseOrThrow(data, SteamGamesResponseSchema);
+    gamesRaw = parsed.response?.games ?? [];
+  } catch {
+    // ignore invalid response shape
+  }
+  const games: Game[] = gamesRaw
+    .filter(
+      (g): g is { appid: number; name: string } =>
+        typeof g.appid === 'number' && typeof g.name === 'string' && g.name.length > 0,
+    )
+    .map((g) => ({ appId: g.appid, name: g.name }));
 
-  const data = await fetchJson<SteamGamesResponse>(url);
-  const games: Game[] = (data.response?.games ?? [])
-    .filter((g) => typeof g.appid === 'number' && typeof g.name === 'string' && g.name.length > 0)
-    .map((g) => ({ appId: g.appid, name: g.name as string }));
+  const validatedGames = S.parseOrThrow(games, S.array(GameSchema));
 
   const insert = db.prepare('INSERT OR REPLACE INTO games (appId, name) VALUES (@appId, @name)');
   const tx = db.transaction((items: Game[]) => {
     for (const item of items) insert.run(item);
   });
-  tx(games);
+  tx(validatedGames);
 
-  return games;
+  return validatedGames;
 }
 
 /**
@@ -79,29 +117,106 @@ export async function getAchievements(apiKey: string, steamId: string, appId: nu
     apiKey,
   )}&appid=${appId}`;
 
-  const playerUrl = `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key=${encodeURIComponent(
+  //  http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid=440&key=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&steamid=76561197972495328
+  const playerUrl = `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?key=${encodeURIComponent(
     apiKey,
-  )}&steamid=${encodeURIComponent(steamId)}&appid=${appId}`;
+  )}&steamid=${encodeURIComponent(steamId)}&appid=${appId}&l=english`;
 
-  type SchemaResp = {
-    game?: {
-      availableGameStats?: { achievements?: Array<{ name: string; displayName?: string; description?: string }> };
-    };
-  };
-  type PlayerResp = {
-    playerstats?: { achievements?: Array<{ apiname: string; achieved: number; unlocktime?: number }> };
-  };
+  // Try schema + primary player achievements endpoint first
+  const [schema, player] = await Promise.all([fetchJson<unknown>(schemaUrl), fetchJson<unknown>(playerUrl)]);
 
-  const [schema, player] = await Promise.all([
-    fetchJson<SchemaResp>(schemaUrl).catch(() => ({}) as SchemaResp),
-    fetchJson<PlayerResp>(playerUrl).catch(() => ({}) as PlayerResp),
-  ]);
+  let parsedSchema:
+    | {
+        game?: {
+          availableGameStats?: { achievements?: Array<{ name: string; displayName?: string; description?: string }> };
+        };
+      }
+    | undefined;
+  let parsedPlayer:
+    | {
+        playerstats?: {
+          achievements?: Array<{ apiname: string; achieved: number; unlocktime?: number }>;
+          error?: string;
+        };
+      }
+    | undefined;
+  try {
+    parsedSchema = S.parseOrThrow(schema, GameSchemaForGameSchema);
+  } catch {
+    // ignore invalid schema
+  }
+  try {
+    parsedPlayer = S.parseOrThrow(player, PlayerAchievementsSchema);
+  } catch {
+    // ignore invalid player payload
+  }
+
+  const playerError = parsedPlayer?.playerstats?.error;
+
+  if (typeof playerError === 'string' && playerError.toLowerCase().includes('not public')) {
+    throw new Error(playerError);
+  }
+
+  let playerAchievements: Array<{ apiname: string; achieved: number; unlocktime?: number }> =
+    parsedPlayer?.playerstats?.achievements ?? [];
+
+  // Fallback: some titles or privacy settings cause GetPlayerAchievements to omit data
+  // Attempt GetUserStatsForGame, which sometimes returns achievements under a different shape
+  if (!playerAchievements || playerAchievements.length === 0) {
+    const userStatsUrl = `https://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v2/?key=${encodeURIComponent(
+      apiKey,
+    )}&steamid=${encodeURIComponent(steamId)}&appid=${appId}&l=english`;
+    try {
+      const altUnknown = await fetchJson<unknown>(userStatsUrl);
+      const alt = S.parseOrThrow(altUnknown, UserStatsForGameSchema);
+      const altAchievements = alt.playerstats?.achievements ?? [];
+      if (altAchievements.length > 0) {
+        playerAchievements = altAchievements.map((a) => ({
+          apiname: a.name,
+          achieved: a.achieved,
+          unlocktime: a.unlocktime,
+        }));
+      }
+    } catch {
+      // ignore and continue with empty player achievements
+    }
+  }
+
+  // Fallback 2: Steam Community XML (no API key needed, but we have one). Some games report achievements here
+  if (!playerAchievements || playerAchievements.length === 0) {
+    const profilePath = /^\d{17}$/.test(steamId) ? `profiles/${steamId}` : `id/${encodeURIComponent(steamId)}`;
+    const xmlUrl = `https://steamcommunity.com/${profilePath}/stats/${appId}?xml=1&l=english`;
+    try {
+      const xml = await fetchText(xmlUrl);
+      // Very small, permissive parser to extract <achievements><achievement>...</achievement></achievements>
+      // We only need apiname, achieved, and unlocktime
+      const items: Array<{ apiname: string; achieved: number; unlocktime?: number }> = [];
+      const achievementBlocks = xml.split('<achievement>').slice(1);
+      for (const block of achievementBlocks) {
+        const nameMatch = block.match(/<apiname>([^<]+)<\/apiname>/i) || block.match(/<name>([^<]+)<\/name>/i);
+        const achievedMatch = block.match(/<achieved>(\d+)<\/achieved>/i);
+        const unlockMatch = block.match(/<unlockTimestamp>(\d+)<\/unlockTimestamp>/i);
+        if (!nameMatch) continue;
+        const apiname = nameMatch[1];
+        const achieved = achievedMatch ? parseInt(achievedMatch[1], 10) : 0;
+        const unlocktime = unlockMatch ? parseInt(unlockMatch[1], 10) : undefined;
+        items.push({ apiname, achieved, unlocktime });
+      }
+      if (items.length > 0) {
+        playerAchievements = items;
+      }
+    } catch {
+      // ignore and continue
+    }
+  }
 
   const merged: Achievement[] = mergeSchemaAndPlayerAchievements({
-    schemaAchievements: schema.game?.availableGameStats?.achievements ?? [],
-    playerAchievements: player.playerstats?.achievements ?? [],
+    schemaAchievements: parsedSchema?.game?.availableGameStats?.achievements ?? [],
+    playerAchievements,
     appId,
   });
+
+  const validatedMerged = S.parseOrThrow(merged, S.array(AchievementSchema));
 
   const upsert = db.prepare(
     `INSERT OR REPLACE INTO achievements (apiName, gameAppId, displayName, description, achieved, unlockedAt)
@@ -115,9 +230,9 @@ export async function getAchievements(apiKey: string, steamId: string, appId: nu
         unlockedAt: item.unlockedAt?.toISOString() ?? null,
       });
   });
-  tx(merged);
+  tx(validatedMerged);
 
-  return merged;
+  return validatedMerged;
 }
 
 export function mergeSchemaAndPlayerAchievements(args: {

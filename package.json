@@ -30,11 +30,14 @@
     "ink": "^6.3.1",
     "kleur": "^4.1.5",
     "playwright": "^1.55.0",
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "sury": "11.0.0-alpha.3",
+    "typia": "^9.7.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.36.0",
+    "@ryoppippi/unplugin-typia": "^2.6.5",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.5.2",
     "@types/react": "^19.0.0",
@@ -44,6 +47,7 @@
     "eslint-plugin-react": "^7.37.5",
     "ink-testing-library": "^4.0.0",
     "prettier": "^3.6.2",
+    "ts-patch": "^3.3.0",
     "tsx": "^4.19.2",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"

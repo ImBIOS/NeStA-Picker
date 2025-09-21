@@ -1,6 +1,6 @@
 // Ensure React reconciler sees a proper environment
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
-import React from 'react';
+// React import not needed; components are created in tests
 import { vi } from 'vitest';
 
 type User = { steamId: string; apiKey?: string; openRouterApiKey?: string };
@@ -88,11 +88,4 @@ class FakeDatabase {
 
 vi.mock('better-sqlite3', () => ({ default: FakeDatabase }));
 
-// Make Ink use react-test-renderer backend implicitly via react reconciliation
-// Tests will render components with react-test-renderer instead of Ink's custom reconciler.
-vi.mock('ink', () => {
-  return {
-    Text: ({ children, color }: { children?: any; color?: string }) =>
-      React.createElement('span', { 'data-color': color }, children),
-  } as any;
-});
+// Use actual Ink components; ink-testing-library will capture stdout.

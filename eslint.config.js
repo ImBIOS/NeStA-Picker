@@ -17,6 +17,9 @@ const compat = new FlatCompat({
 
 export default defineConfig([
   {
+    ignores: ['dist/**'],
+  },
+  {
     languageOptions: {
       parser: tsParser,
     },

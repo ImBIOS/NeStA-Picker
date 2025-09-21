@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ '**' ]
+    branches: ['**']
   pull_request:
-    branches: [ '**' ]
+    branches: ['**']
 
 jobs:
   build-test:
@@ -35,5 +35,3 @@ jobs:
 
       - name: Type-check
         run: pnpm build --noEmit
-
-

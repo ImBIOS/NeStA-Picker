@@ -1,8 +1,8 @@
 # Feature Specification: NeStA-Picker: Next Steam Achievement Picker
 
-**Feature Branch**: `001-build-an-application`  
-**Created**: 2025-09-21  
-**Status**: Draft  
+**Feature Branch**: `001-build-an-application`
+**Created**: 2025-09-21
+**Status**: Draft
 **Input**: User description: "Build an application that helps me pick the next Steam achievement to attempt from my current library. The app uses the official Steam API if possible, otherwise falls back to opening a Playwright browser session where the user logs in and data is scraped. Users can apply simple filters or pick an achievement at random. By default, the app only selects the next achievement, but browsing achievements is optional. Optionally, the user can enable LLM explanations via OpenRouter.ai (using ai-sdk and their own API key) to understand why a specific achievement was picked. Nice-to-have features include progress tracking, history/log of previous picks, and social sharing. The initial implementation can be a CLI with a colorful, well-designed interface built using a popular framework."
 
 ## Execution Flow (main)

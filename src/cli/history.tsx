@@ -1,5 +1,5 @@
 import { Text } from 'ink';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import db from '../lib/db';
 
 type HistoryRow = { pickedAt: string; achievementApiName: string; displayName: string };
@@ -9,9 +9,8 @@ type HistoryRow = { pickedAt: string; achievementApiName: string; displayName: s
  * Shows the last 50 picks with timestamps and achievement names.
  */
 export default function History() {
-  const [rows, setRows] = useState<HistoryRow[]>([]);
-
-  useEffect(() => {
+  // Load synchronously so first render reflects DB content in tests and CLI
+  const [rows] = useState<HistoryRow[]>(() => {
     const stmt = db.prepare(
       `SELECT ph.pickedAt as pickedAt, ph.achievementApiName as achievementApiName, a.displayName as displayName
        FROM pick_history ph
@@ -19,9 +18,8 @@ export default function History() {
        ORDER BY ph.pickedAt DESC
        LIMIT 50`,
     );
-    const data = stmt.all() as HistoryRow[];
-    setRows(data);
-  }, []);
+    return stmt.all() as HistoryRow[];
+  });
 
   if (rows.length === 0)
     return (
