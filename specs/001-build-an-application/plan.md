@@ -1,7 +1,7 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: NeStA-Picker
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `001-build-an-application` | **Date**: 2025-09-21 | **Spec**: [link](./spec.md)
+**Input**: Feature specification from `/home/imbios/projects/NeStA-Picker/specs/001-build-an-application/spec.md`
 
 ## Execution Flow (/plan command scope)
 
@@ -33,40 +33,41 @@
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+The project is a CLI tool to help users pick the next Steam achievement to attempt. It will be built with TypeScript, Ink, and SQLite. It will use the Steam Web API and fall back to Playwright if needed.
 
 ## Technical Context
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: TypeScript
+**Primary Dependencies**: Ink, Kleur, SQLite (via a Node.js wrapper), Playwright
+**Storage**: SQLite
+**Testing**: Vitest
+**Target Platform**: Node.js (CLI)
+**Project Type**: single
+**Performance Goals**: Not specified for initial version.
+**Constraints**: Must be easy to install and use.
+**Scale/Scope**: Single user.
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-- **I. Code Quality**: Is the proposed solution maintainable and well-documented?
-- **II. Testing Standards**: Does the plan include comprehensive unit and integration tests (>=80% coverage)?
-- **III. User Experience Consistency**: Does the design adhere to the established design system and style guide?
-- **IV. Performance Requirements**: Does the plan account for performance testing and optimization?
+- **I. Code Quality**: The proposed solution will be maintainable and well-documented by following standard TypeScript best practices.
+- **II. Testing Standards**: The plan includes using Vitest for comprehensive unit and integration tests.
+- **III. User Experience Consistency**: The CLI design will be consistent and guided by the Ink framework.
+- **IV. Performance Requirements**: Performance will be monitored, but no specific benchmarks are set for the initial version.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```
-specs/[###-feature]/
+specs/001-build-an-application/
 ├── plan.md              # This file (/plan command output)
 ├── research.md          # Phase 0 output (/plan command)
 ├── data-model.md        # Phase 1 output (/plan command)
 ├── quickstart.md        # Phase 1 output (/plan command)
 ├── contracts/           # Phase 1 output (/plan command)
+│   └── cli.md
 └── tasks.md             # Phase 2 output (/tasks command - NOT created by /plan)
 ```
 
@@ -84,31 +85,9 @@ tests/
 ├── contract/
 ├── integration/
 └── unit/
-
-# Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure]
 ```
 
-**Structure Decision**: [DEFAULT to Option 1 unless Technical Context indicates web/mobile app]
+**Structure Decision**: Option 1: Single project
 
 ## Phase 0: Outline & Research
 
@@ -201,10 +180,9 @@ _These phases are beyond the scope of the /plan command_
 
 _Fill ONLY if Constitution Check has violations that must be justified_
 
-| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
-| -------------------------- | ------------------ | ------------------------------------ |
-| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+| --------- | ---------- | ------------------------------------ |
+|           |            |                                      |
 
 ## Progress Tracking
 
@@ -212,8 +190,8 @@ _This checklist is updated during execution flow_
 
 **Phase Status**:
 
-- [ ] Phase 0: Research complete (/plan command)
-- [ ] Phase 1: Design complete (/plan command)
+- [x] Phase 0: Research complete (/plan command)
+- [x] Phase 1: Design complete (/plan command)
 - [ ] Phase 2: Task planning complete (/plan command - describe approach only)
 - [ ] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
@@ -221,9 +199,9 @@ _This checklist is updated during execution flow_
 
 **Gate Status**:
 
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
+- [x] Initial Constitution Check: PASS
+- [x] Post-Design Constitution Check: PASS
+- [x] All NEEDS CLARIFICATION resolved
 - [ ] Complexity deviations documented
 
 ---
