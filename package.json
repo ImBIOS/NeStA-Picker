@@ -1,0 +1,56 @@
+{
+  "name": "NeStA-Picker",
+  "version": "1.0.0",
+  "description": "A CLI tool to help users pick the next Steam achievement to attempt from their current library.",
+  "main": "src/cli/index.ts",
+  "type": "module",
+  "scripts": {
+    "nesta": "NODE_ENV=development tsx src/cli/index.ts",
+    "build": "tsc",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest"
+  },
+  "keywords": [
+    "nesta",
+    "picker",
+    "steam",
+    "achievement",
+    "cli"
+  ],
+  "author": {
+    "name": "Imamuzzaki Abu Salam",
+    "email": "imamuzzaki@gmail.com",
+    "url": "https://github.com/ImBIOS"
+  },
+  "license": "MIT",
+  "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "ink": "^6.3.1",
+    "kleur": "^4.1.5",
+    "playwright": "^1.55.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.36.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react": "^7.37.5",
+    "ink-testing-library": "^4.0.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "vitest": {
+    "setupFiles": [
+      "./tests/setup.ts"
+    ]
+  }
+}

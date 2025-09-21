@@ -13,20 +13,25 @@ Sync Impact Report:
   - ✅ .specify/templates/tasks-template.md
 - Follow-up TODOs: None
 -->
+
 # NeStA-Picker Constitution
 
 ## Core Principles
 
 ### I. Code Quality
+
 All code must be clear, maintainable, and well-documented. Code should adhere to established style guides and best practices. All new code must be reviewed and approved by at least one other developer before being merged.
 
 ### II. Testing Standards
+
 All new features must be accompanied by a comprehensive suite of unit and integration tests. A minimum of 80% code coverage is required for all new code. All tests must pass before a feature can be deployed.
 
 ### III. User Experience Consistency
+
 The user interface and experience shall be consistent across the entire application. All new UI components must adhere to the established design system and style guide.
 
 ### IV. Performance Requirements
+
 The application must meet defined performance benchmarks. All new features must be tested for performance impact and optimized to ensure they do not degrade the user experience.
 
 ## Development Workflow
