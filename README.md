@@ -113,4 +113,4 @@ See [LICENSE](LICENSE) file.
 
 ## Keywords
 
-steam achievement picker, steam cli, choose next steam achievement, backlog tool, gaming productivity, ink cli, node cli, typescript cli, steam api achievements, pick next achievement
+steam achievement picker, steam cli, choose next steam achievement, backlog tool, gaming productivity, ink cli, node cli, typescript cli, steam api achievements, pick next achievement, completionist

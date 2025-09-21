@@ -1,7 +1,7 @@
 {
   "name": "NeStA-Picker",
   "version": "1.0.0",
-  "description": "A CLI tool to help users pick the next Steam achievement to attempt from their current library.",
+  "description": "A CLI tool for Completionists to pick the next Steam achievement to attempt from their current library.",
   "main": "src/cli/index.ts",
   "type": "module",
   "scripts": {
@@ -16,7 +16,8 @@
     "picker",
     "steam",
     "achievement",
-    "cli"
+    "cli",
+    "completionist"
   ],
   "author": {
     "name": "Imamuzzaki Abu Salam",
